@@ -16,7 +16,7 @@ export const toggleColumn =(show: boolean, column: PropertyType) : Action =>({
     column
 })
 
-export const moveCOlumn = (newIndex: number, column: PropertyType): Action => ({
+export const moveColumn = (newIndex: number, column: PropertyType): Action => ({
     type: "MOVE_COLUMN",
     newIndex,
     column
