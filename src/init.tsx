@@ -1,4 +1,5 @@
 import "./style.css";
+import "pikaday/css/pikaday.css";
 
 import * as React from "react";
 import * as ReactDOM from "react-dom";
