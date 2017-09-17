@@ -4,6 +4,7 @@
   "main": "index.js",
   "license": "MIT",
   "dependencies": {
+    "moment": "^2.18.1",
     "pikaday": "^1.6.1",
     "react": "^15.6.1",
     "react-dnd": "^2.5.1",

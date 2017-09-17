@@ -8,6 +8,12 @@ export type Action = {
     type: "MOVE_COLUMN",
     newIndex: number,
     column: PropertyType
+}|{
+    type: "SET_START_DATE",
+    date: Date
+}|{
+    type: "SET_END_DATE",
+    date: Date
 }
 
 export const toggleColumn =(show: boolean, column: PropertyType) : Action =>({
@@ -21,3 +27,13 @@ export const moveColumn = (newIndex: number, column: PropertyType): Action => ({
     newIndex,
     column
 })
+
+export const setStartDate = (date: Date): Action => ({
+    type: "SET_START_DATE",
+    date
+});
+
+export const setEndDate = (date: Date): Action => ({
+    type: "SET_END_DATE",
+    date
+});
