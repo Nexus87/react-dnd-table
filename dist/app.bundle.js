@@ -43434,6 +43434,14 @@ function applyMiddleware() {
 
 "use strict";
 
+var __assign = (this && this.__assign) || Object.assign || function(t) {
+    for (var s, i = 1, n = arguments.length; i < n; i++) {
+        s = arguments[i];
+        for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+            t[p] = s[p];
+    }
+    return t;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 var redux_1 = __webpack_require__(42);
 var columns = function (store, action) {
@@ -43446,12 +43454,25 @@ var columns = function (store, action) {
             var newArray = store.filter(function (x) { return x !== column_1; });
             newArray.splice(newIndex, 0, column_1);
             return newArray;
+        case "SET_START_DATE":
+        default:
+            return store;
+    }
+};
+var dates = function (store, action) {
+    if (store === void 0) { store = { startDate: null, endDate: null }; }
+    switch (action.type) {
+        case "SET_START_DATE":
+            return __assign({}, store, { startDate: action.date });
+        case "SET_END_DATE":
+            return __assign({}, store, { endDate: action.date });
         default:
             return store;
     }
 };
 exports.reducer = redux_1.combineReducers({
-    columns: columns
+    columns: columns,
+    dates: dates
 });
 
 
@@ -43489,21 +43510,25 @@ var MainComponent = /** @class */ (function (_super) {
         return _this;
     }
     MainComponent.prototype.render = function () {
-        var _a = this.props, allColumns = _a.allColumns, data = _a.data, columns = _a.columns, header = _a.header;
-        // var visibleColumns = allColumns.filter(x => columns.filter(y => y === x)[0]);
+        var _a = this.props, allColumns = _a.allColumns, data = _a.data, columns = _a.columns, header = _a.header, endDate = _a.endDate, startDate = _a.startDate;
         return (React.createElement("div", null,
             React.createElement("div", null,
-                React.createElement(datepicker_1.Datepicker, null)),
+                React.createElement(datepicker_1.Datepicker, { onDateChange: this.props.setStartDate, endDate: this.props.endDate }),
+                React.createElement(datepicker_1.Datepicker, { onDateChange: this.props.setEndDate, startDate: this.props.startDate })),
             React.createElement(table_1.Table, { columns: columns, data: data, header: header, onDrop: this.moveColumn })));
     };
     return MainComponent;
 }(React.Component));
 var mapStateToProps = function (store) { return ({
-    columns: store.columns
+    columns: store.columns,
+    endDate: store.dates.endDate,
+    startDate: store.dates.startDate
 }); };
 var mapDispatcherToProps = function (dispatch) { return ({
     toggleColumns: redux_1.bindActionCreators(actions_1.toggleColumn, dispatch),
-    moveColumn: redux_1.bindActionCreators(actions_1.moveColumn, dispatch)
+    moveColumn: redux_1.bindActionCreators(actions_1.moveColumn, dispatch),
+    setEndDate: redux_1.bindActionCreators(actions_1.setEndDate, dispatch),
+    setStartDate: redux_1.bindActionCreators(actions_1.setStartDate, dispatch)
 }); };
 exports.Main = react_redux_1.connect(mapStateToProps, mapDispatcherToProps)(MainComponent);
 
@@ -50101,6 +50126,14 @@ exports.moveColumn = function (newIndex, column) { return ({
     newIndex: newIndex,
     column: column
 }); };
+exports.setStartDate = function (date) { return ({
+    type: "SET_START_DATE",
+    date: date
+}); };
+exports.setEndDate = function (date) { return ({
+    type: "SET_END_DATE",
+    date: date
+}); };
 
 
 /***/ }),
@@ -50709,19 +50742,40 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var React = __webpack_require__(9);
 var ReactDOM = __webpack_require__(96);
 var Pikaday = __webpack_require__(519);
+var moment = __webpack_require__(0);
 var Datepicker = /** @class */ (function (_super) {
     __extends(Datepicker, _super);
     function Datepicker() {
-        return _super !== null && _super.apply(this, arguments) || this;
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this.handleFocusLost = function (e) {
+            var date = moment(e.currentTarget.value, "DD.MM.YYYY");
+            if (date.isValid()) {
+                _this.props.onDateChange(date.toDate());
+            }
+            else {
+                _this.props.onDateChange(null);
+                e.currentTarget.value = "";
+            }
+        };
+        return _this;
     }
     Datepicker.prototype.componentDidMount = function () {
-        var options = {};
-        var picker = new Pikaday({
-            field: ReactDOM.findDOMNode(this.refs.pikaday)
+        var _a = this.props, startDate = _a.startDate, endDate = _a.endDate, onDateChange = _a.onDateChange;
+        this.picker = new Pikaday({
+            field: ReactDOM.findDOMNode(this.refs.pikaday),
+            minDate: startDate,
+            maxDate: endDate,
+            // onSelect: onDateChange,
+            format: "DD.MM.YYYY",
         });
     };
+    Datepicker.prototype.componentDidUpdate = function () {
+        var _a = this.props, startDate = _a.startDate, endDate = _a.endDate;
+        this.picker.setMaxDate(endDate);
+        this.picker.setMinDate(startDate);
+    };
     Datepicker.prototype.render = function () {
-        return (React.createElement("input", { type: "text", ref: "pikaday" }));
+        return (React.createElement("input", { type: "text", ref: "pikaday", onBlur: this.handleFocusLost }));
     };
     return Datepicker;
 }(React.Component));
